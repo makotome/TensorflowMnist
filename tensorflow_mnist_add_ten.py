@@ -130,13 +130,13 @@ def visualize_augmented_samples(images, labels, num_samples=5):
     mask_10 = (labels == 10)
     images_10 = images[mask_10][:num_samples]
     
-    # plt.figure(figsize=(15, 3))
-    # for i in range(num_samples):
-    #     plt.subplot(1, num_samples, i + 1)
-    #     plt.imshow(images_10[i].reshape(28, 28), cmap='gray')
-    #     plt.axis('off')
-    #     plt.title(f'Sample {i+1}')
-    # plt.show()
+    plt.figure(figsize=(15, 3))
+    for i in range(num_samples):
+        plt.subplot(1, num_samples, i + 1)
+        plt.imshow(images_10[i].reshape(28, 28), cmap='gray')
+        plt.axis('off')
+        plt.title(f'Sample {i+1}')
+    plt.show()
 
 def evaluate_model(model, test_images, test_labels):
     """详细评估模型性能"""
@@ -269,8 +269,6 @@ def main():
     # 评估模型
     loss, accuracy = model.evaluate(valid_ds, verbose=2)
     print(f"\nValidation accuracy: {accuracy}")
-
-    # evaluate_model1
     
     # 可视化一些增强后的样本
     # visualize_augmented_samples(balanced_images, balanced_labels)
