@@ -7,7 +7,7 @@ from sklearn.utils import shuffle
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-class_names = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+class_names = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', "11", "12", "13"]
 
 def create_data_augmentation():
     """创建数据增强层"""
@@ -19,42 +19,42 @@ def create_data_augmentation():
         tf.keras.layers.RandomContrast(0.1)
     ])
 
-def augment_class_10(images, labels, target_size, augmentation_layer):
+def augment_class_special(num, images, labels, target_size, augmentation_layer):
     """
     专门对数字10的样本进行数据增强
     """
-    # 找出所有数字10的样本
-    mask_10 = (labels == 10)
-    images_10 = images[mask_10]
-    labels_10 = labels[mask_10]
+    # 找出所有数字10,11,12,13(<,==,>)的样本
+    mask_special = (labels == num)
+    images_special = images[mask_special]
+    labels_special = labels[mask_special]
     
     # 显示前 5 张图像
-    # plt.figure(figsize=(10, 2))
-    # for i in range(min(5, len(images_10))):
-    #     plt.subplot(1, 5, i + 1)
-    #     plt.imshow(images_10[i].reshape(28, 28), cmap='gray')
-    #     plt.title(f'Label: {labels_10[i]}')
-    #     plt.axis('off')
-    # plt.show()
+    plt.figure(figsize=(10, 2))
+    for i in range(min(5, len(images_special))):
+        plt.subplot(1, 5, i + 1)
+        plt.imshow(images_special[i].reshape(28, 28), cmap='gray')
+        plt.title(f'Label: {labels_special[i]}')
+        plt.axis('off')
+    plt.show()
 
     # 计算需要增强的数量
-    current_size = len(images_10)
+    current_size = len(images_special)
     augment_times = int(np.ceil(target_size / current_size))
     
-    print(f"当前数字10的样本数量: {current_size}")
+    print(f"当前数字{num}的样本数量: {current_size}")
     print(f"目标数量: {target_size}")
     print(f"需要增强的倍数: {augment_times}")
     
     # 存储增强后的图片和标签
-    augmented_images = [images_10]
-    augmented_labels = [labels_10]
+    augmented_images = [images_special]
+    augmented_labels = [labels_special]
     
     # 进行数据增强
     for i in range(augment_times - 1):
         # 确保输入张量的形状正确
-        augmented = augmentation_layer(tf.convert_to_tensor(images_10), training=True)
+        augmented = augmentation_layer(tf.convert_to_tensor(images_special), training=True)
         augmented_images.append(augmented.numpy())
-        augmented_labels.append(labels_10)
+        augmented_labels.append(labels_special)
     
     # 合并所有增强后的数据
     augmented_images = np.concatenate(augmented_images, axis=0)
@@ -88,15 +88,16 @@ def prepare_balanced_dataset(x_train, y_train, custom_images, custom_labels):
     # 创建数据增强层
     data_augmentation = create_data_augmentation()
     
-    # 对数字10进行数据增强
-    augmented_10_images, augmented_10_labels = augment_class_10(
-        all_images, all_labels, avg_count, data_augmentation
-    )
-    
-    # 将原始数据中的10替换为增强后的数据
-    mask_not_10 = (all_labels != 10)
-    final_images = np.concatenate([all_images[mask_not_10], augmented_10_images])
-    final_labels = np.concatenate([all_labels[mask_not_10], augmented_10_labels])
+
+    for i in range(10, 14):
+        # 对数字i进行数据增强
+        augmented_images, augmented_labels = augment_class_special(
+            i, all_images, all_labels, avg_count, data_augmentation
+        )
+        # 将原始数据中的i替换为增强后的数据
+        mask_not_i = (all_labels != i)
+        final_images = np.concatenate([all_images[mask_not_i], augmented_images])
+        final_labels = np.concatenate([all_labels[mask_not_i], augmented_labels])
     
     # 随机打乱数据
     final_images, final_labels = shuffle(final_images, final_labels, random_state=42)
@@ -114,7 +115,7 @@ def create_model():
         tf.keras.layers.Flatten(),
         tf.keras.layers.Dense(64, activation='relu'),
         tf.keras.layers.Dropout(0.2),
-        tf.keras.layers.Dense(11, activation='softmax')  # 11个类别（0-10）
+        tf.keras.layers.Dense(14, activation='softmax')  # 11个类别（0-10）
     ])
     
     model.compile(
@@ -144,7 +145,7 @@ def evaluate_model(model, test_images, test_labels):
     predictions = model.predict(test_images)
     
     # 每个类别的准确率
-    for i in range(11):  # 0-10
+    for i in range(14):  # 0-14
         mask = test_labels == i
         if np.any(mask):
             class_acc = np.mean(np.argmax(predictions[mask], axis=1) == test_labels[mask])
