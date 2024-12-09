@@ -7,7 +7,7 @@ from sklearn.utils import shuffle
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-class_names = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', "11", "12", "13"]
+class_names = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23"]
 
 def create_data_augmentation():
     """创建数据增强层"""
@@ -89,7 +89,7 @@ def prepare_balanced_dataset(x_train, y_train, custom_images, custom_labels):
     data_augmentation = create_data_augmentation()
     
 
-    for i in range(10, 14):
+    for i in range(10, 24):
         # 对数字i进行数据增强
         augmented_images, augmented_labels = augment_class_special(
             i, all_images, all_labels, avg_count, data_augmentation
@@ -115,7 +115,7 @@ def create_model():
         tf.keras.layers.Flatten(),
         tf.keras.layers.Dense(64, activation='relu'),
         tf.keras.layers.Dropout(0.2),
-        tf.keras.layers.Dense(14, activation='softmax')  # 11个类别（0-10）
+        tf.keras.layers.Dense(24, activation='softmax')  # 11个类别（0-10）
     ])
     
     model.compile(
